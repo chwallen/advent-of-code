@@ -5,3 +5,12 @@ type Point struct {
 	X int
 	Y int
 }
+
+// Add returns a new point with one step in direction d.
+func (c Point) Add(d Direction) Point {
+	return Point{X: c.X + d.X, Y: c.Y + d.Y}
+}
+
+func (c Point) XY() (x, y int) {
+	return c.X, c.Y
+}
