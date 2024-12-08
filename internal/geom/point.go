@@ -14,3 +14,7 @@ func (c Point) Add(d Direction) Point {
 func (c Point) XY() (x, y int) {
 	return c.X, c.Y
 }
+
+func (c Point) IsWithinBounds(minX, minY, maxX, maxY int) bool {
+	return minX <= c.X && c.X < maxX && minY <= c.Y && c.Y < maxY
+}
