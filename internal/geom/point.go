@@ -11,6 +11,16 @@ func (c Point) Add(d Direction) Point {
 	return Point{X: c.X + d.X, Y: c.Y + d.Y}
 }
 
+// Neighbors returns all neighboring points.
+func (c Point) Neighbors() []Point {
+	return []Point{
+		c.Add(Left),
+		c.Add(Right),
+		c.Add(Up),
+		c.Add(Down),
+	}
+}
+
 func (c Point) XY() (x, y int) {
 	return c.X, c.Y
 }
