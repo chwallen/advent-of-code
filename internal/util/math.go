@@ -11,3 +11,15 @@ func DivRem(a, b int) (quotient, remainder int) {
 	remainder = a - b*quotient
 	return quotient, remainder
 }
+
+// IntPow raises base to the power of exponent.
+func IntPow(base, exponent int) int {
+	if exponent == 0 {
+		return 1
+	}
+	result := base
+	for i := 1; i < exponent; i++ {
+		result *= base
+	}
+	return result
+}
