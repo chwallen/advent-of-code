@@ -20,6 +20,11 @@ func (d Direction) TurnRight() Direction {
 	return Direction{-d.Y, d.X}
 }
 
+// TurnLeft returns the point which is turned 90 degrees left.
+func (d Direction) TurnLeft() Direction {
+	return Direction{d.Y, -d.X}
+}
+
 // GetCardinalIndex gets the int which represents the direction.
 // Only works for the directions Up, Right, Down, and Left.
 func (d Direction) GetCardinalIndex() int {
