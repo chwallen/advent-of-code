@@ -6,4 +6,4 @@ Things that are shared between days are placed inside the _internal_ directory.
 
 The repository is based on this template: <https://github.com/chwallen/go-aoc-template>.
 
-Go 1.23 or later is required.
+Go 1.25 or later is required.

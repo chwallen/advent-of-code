@@ -25,7 +25,7 @@ func CutToInts(s, sep string) (l, r int) {
 // SplitToInts splits s at sep using strings.Split, converts and adds each part
 // to b, and returns the updated slice. Panics if a part cannot be converted.
 func SplitToInts(s, sep string, b []int) []int {
-	for _, v := range strings.Split(s, sep) {
+	for v := range strings.SplitSeq(s, sep) {
 		b = append(b, Atoi(v))
 	}
 	return b

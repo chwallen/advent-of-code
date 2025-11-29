@@ -31,7 +31,7 @@ func getNumberOfStones(lines []string, generations int) int {
 	currentGeneration := make(map[int]int, 1000)
 	nextGeneration := make(map[int]int, 1000)
 
-	for _, inputStone := range strings.Split(line, " ") {
+	for inputStone := range strings.FieldsSeq(line) {
 		stone := util.Atoi(inputStone)
 		currentGeneration[stone] += 1
 	}

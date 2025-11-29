@@ -19,7 +19,7 @@ func PartOne(lines []string, extras ...any) any {
 	rootNode := createTree(lines[0])
 
 	knownDesigns := ds.NewSet[string]()
-	for _, pattern := range strings.Split(lines[0], ", ") {
+	for pattern := range strings.SplitSeq(lines[0], ", ") {
 		knownDesigns.Add(pattern)
 	}
 
@@ -57,7 +57,7 @@ func PartTwo(lines []string, extras ...any) any {
 	rootNode := createTree(lines[0])
 
 	knownDesigns := make(map[string]int, 20_000)
-	for _, pattern := range strings.Split(lines[0], ", ") {
+	for pattern := range strings.SplitSeq(lines[0], ", ") {
 		countPossibleDesigns(rootNode, pattern, knownDesigns)
 	}
 
@@ -97,8 +97,7 @@ func countPossibleDesigns(root *node, design string, knownDesigns map[string]int
 
 func createTree(input string) *node {
 	root := &node{}
-	patterns := strings.Split(input, ", ")
-	for _, pattern := range patterns {
+	for pattern := range strings.SplitSeq(input, ", ") {
 		currentNode := root
 		for i, char := range pattern {
 			currentNode = currentNode.getOrCreateChild(pattern, char, i)

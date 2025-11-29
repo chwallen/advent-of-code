@@ -23,7 +23,7 @@ func PartOne(lines []string, extras ...any) any {
 func PartTwo(lines []string, extras ...any) any {
 	line := strings.Join(lines, "")
 	sum := 0
-	for _, s := range strings.Split(line, "do()") {
+	for s := range strings.SplitSeq(line, "do()") {
 		disabledRegionStart := strings.Index(s, "don't()")
 		if disabledRegionStart == -1 {
 			disabledRegionStart = len(s)
