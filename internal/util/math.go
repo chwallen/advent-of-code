@@ -23,3 +23,13 @@ func IntPow(base, exponent int) int {
 	}
 	return result
 }
+
+// CountDigits counts the number of digits n consists of.
+func CountDigits(n int) int {
+	x, count := 10, 1
+	for x <= n {
+		x *= 10
+		count++
+	}
+	return count
+}
