@@ -43,7 +43,7 @@ func getNumberOfStones(lines []string, generations int) int {
 				continue
 			}
 
-			digits := countDigits(stoneNumber)
+			digits := util.CountDigits(stoneNumber)
 			half, remainder := util.DivRem(digits, 2)
 			if remainder == 0 {
 				divisor := powersOf10[half]
@@ -64,13 +64,4 @@ func getNumberOfStones(lines []string, generations int) int {
 		stones += count
 	}
 	return stones
-}
-
-func countDigits(n int) int {
-	count := 0
-	for n > 0 {
-		n /= 10
-		count += 1
-	}
-	return count
 }
