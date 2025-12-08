@@ -6,6 +6,11 @@ type Point struct {
 	Y int
 }
 
+// A Point3D represents a point in a 3D space.
+type Point3D struct {
+	X, Y, Z int
+}
+
 // Add returns a new point with one step in direction d.
 func (c Point) Add(d Direction) Point {
 	return Point{X: c.X + d.X, Y: c.Y + d.Y}
