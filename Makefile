@@ -3,6 +3,7 @@ GO ?= go
 GO_FILES := $(shell find . -name "*.go" ! -name "day_parts.go")
 DAY_PARTS := cmd/run/day_parts.go
 DAY_PARTS_TEMPLATE := internal/template/day_parts.tmpl
+CGO_CFLAGS ?= -I/usr/include/lpsolve
 
 ifdef YEAR
 YEAR_FLAG := --year $(YEAR)
@@ -34,10 +35,10 @@ $(DAY_PARTS): $(GO_FILES) $(DAY_PARTS_TEMPLATE)
 	@$(GO) generate ./cmd/run
 
 run: $(DAY_PARTS)
-	@$(GO) run ./cmd/run $(YEAR_FLAG) $(DAY_FLAG) $(PART_FLAG)
+	@CGO_CFLAGS=$(CGO_CFLAGS) $(GO) run ./cmd/run $(YEAR_FLAG) $(DAY_FLAG) $(PART_FLAG)
 
 runall: $(DAY_PARTS)
-	@$(GO) run ./cmd/run --all $(YEAR_FLAG)
+	@CGO_CFLAGS=$(CGO_CFLAGS) $(GO) run ./cmd/run --all $(YEAR_FLAG)
 
 new:
 	@$(GO) run ./cmd/new $(YEAR_FLAG) $(DAY_FLAG) $(AOC_COOKIE_FLAG)
@@ -49,7 +50,7 @@ input:
 	@$(GO) run ./cmd/input $(YEAR_FLAG) $(DAY_FLAG) $(AOC_COOKIE_FLAG)
 
 test:
-	@$(GO) test --cover $(TEST_FLAG)
+	@CGO_CFLAGS=$(CGO_CFLAGS) $(GO) test --cover $(TEST_FLAG)
 
 clean:
 	$(RM) advent-of-code ./cmd/run/day_parts.go
