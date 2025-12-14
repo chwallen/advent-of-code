@@ -1,135 +1,155 @@
 package day10
 
 import (
-	"fmt"
+	"math"
 	"strings"
 
-	"github.com/chwallen/advent-of-code/internal/ds"
 	"github.com/chwallen/advent-of-code/internal/util"
-	"github.com/draffensperger/golp"
 )
 
-type lightsState struct {
-	current int
+type buttonCombination struct {
+	changes []int
 	presses int
+}
+
+type machine struct {
+	sought             []int
+	buttonCombinations []buttonCombination
 }
 
 func PartOne(lines []string, extras ...any) any {
 	minimumRequiredPresses := 0
-Machines:
 	for _, line := range lines {
-		parts := strings.Fields(line)
+		m := parseMachine(line, true)
+		presses := math.MaxInt
 
-		sought := parseLightIndicators(parts[0])
-		buttons := parseLightsButtons(parts)
-
-		seen := make(map[int]int)
-		var queue ds.Queue[lightsState]
-		queue = queue.Push(lightsState{
-			current: 0,
-			presses: 0,
-		})
-		for {
-			var s lightsState
-			s, queue = queue.Pop()
-			s.presses++
-			for _, button := range buttons {
-				next := s.current ^ button
-				if next == sought {
-					minimumRequiredPresses += s.presses
-					continue Machines
+	Combinations:
+		for _, combination := range m.buttonCombinations {
+			for i, v := range combination.changes {
+				if v%2 != m.sought[i] {
+					continue Combinations
 				}
-
-				if v, ok := seen[next]; ok && v <= s.presses {
-					continue
-				}
-				seen[next] = s.presses
-
-				queue = queue.Push(lightsState{
-					current: next,
-					presses: s.presses,
-				})
 			}
+			presses = min(presses, combination.presses)
 		}
+		minimumRequiredPresses += presses
 	}
 	return minimumRequiredPresses
 }
 
 func PartTwo(lines []string, extras ...any) any {
-	minimumRequiredPresses := 0
+	pressesChannel := make(chan int, len(lines))
+	solve := func(line string) {
+		m := parseMachine(line, false)
+		pressesChannel <- findFewestPresses(m.sought, m.buttonCombinations)
+	}
+
 	for _, line := range lines {
-		parts := strings.Fields(line)
+		go solve(line)
+	}
 
-		sought := parseJoltage(parts[len(parts)-1])
-		buttons := parseJoltageButtons(parts, len(sought))
-		n := len(buttons)
-
-		lp := golp.NewLP(0, n)
-
-		obj := make([]float64, n)
-		for i := range n {
-			obj[i] = 1.0
-			lp.SetInt(i, true)
-		}
-		lp.SetObjFn(obj)
-
-		for i, s := range sought {
-			row := make([]float64, n)
-			for j := range n {
-				row[j] = float64(buttons[j][i])
-			}
-			_ = lp.AddConstraint(row, golp.EQ, float64(s))
-		}
-
-		if lp.Solve() != golp.OPTIMAL {
-			panic(fmt.Errorf("failed to find optimal solution for problem %s", line))
-		}
-
-		for _, v := range lp.Variables() {
-			minimumRequiredPresses += int(v)
-		}
+	minimumRequiredPresses := 0
+	for range len(lines) {
+		minimumRequiredPresses += <-pressesChannel
 	}
 	return minimumRequiredPresses
 }
 
-func parseLightIndicators(indicators string) int {
-	var sought int
-	for i, light := range indicators[1 : len(indicators)-1] {
-		active := 0
-		if light == '#' {
-			active = 1
-		}
-		sought |= active << i
+func findFewestPresses(sought []int, combinations []buttonCombination) int {
+	if isZeroSlice(sought) {
+		return 0
 	}
-	return sought
+
+	next := make([]int, len(sought))
+	presses := math.MaxInt
+Combinations:
+	for _, combination := range combinations {
+		for i, v := range sought {
+			c := combination.changes[i]
+			if c > v || c%2 != v%2 {
+				continue Combinations
+			}
+		}
+
+		for i, v := range sought {
+			next[i] = (v - combination.changes[i]) / 2
+		}
+
+		n := findFewestPresses(next, combinations)
+		if n == 0 {
+			presses = min(presses, combination.presses)
+		} else if n < math.MaxInt {
+			presses = min(presses, 2*n+combination.presses)
+		}
+	}
+
+	return presses
 }
 
-func parseLightsButtons(parts []string) []int {
-	parts = parts[1 : len(parts)-1]
-	buttons := make([]int, len(parts))
-	for i, group := range parts {
+func isZeroSlice(s []int) bool {
+	for _, v := range s {
+		if v > 0 {
+			return false
+		}
+	}
+	return true
+}
+
+func parseMachine(line string, parseLights bool) machine {
+	parts := strings.Fields(line)
+	n := len(parts[0]) - 2
+
+	sought := make([]int, 0, n)
+	if parseLights {
+		part := parts[0]
+		for _, light := range part[1 : n+1] {
+			active := 0
+			if light == '#' {
+				active = 1
+			}
+			sought = append(sought, active)
+		}
+	} else {
+		part := parts[len(parts)-1]
+		for v := range strings.SplitSeq(part[1:len(part)-1], ",") {
+			sought = append(sought, util.Atoi(v))
+		}
+	}
+
+	buttonParts := parts[1 : len(parts)-1]
+	buttonsCount := len(buttonParts)
+	buttons := make([][]int, buttonsCount)
+	for i, group := range buttonParts {
+		buttons[i] = make([]int, 0, len(group))
 		for s := range strings.SplitSeq(group[1:len(group)-1], ",") {
-			buttons[i] |= 1 << util.Atoi(s)
+			buttons[i] = append(buttons[i], util.Atoi(s))
 		}
 	}
-	return buttons
-}
 
-func parseJoltageButtons(parts []string, n int) [][]int {
-	parts = parts[1 : len(parts)-1]
-	buttons := ds.Allocate2DSlice[int](n, len(parts))
-	for i, group := range parts {
-		for s := range strings.SplitSeq(group[1:len(group)-1], ",") {
-			buttons[i][util.Atoi(s)] = 1
+	combinationsCount := 1 << buttonsCount
+	buttonCombinations := make([]buttonCombination, 0, combinationsCount)
+	combinations := make([]int, combinationsCount*n)
+	for i := range combinationsCount {
+		start := i * n
+		changes := combinations[start : start+n]
+		presses := 0
+		for j := range buttonsCount {
+			if i&(1<<j) != 0 {
+				presses++
+				for _, index := range buttons[j] {
+					changes[index]++
+				}
+			}
 		}
-	}
-	return buttons
-}
 
-func parseJoltage(part string) []int {
-	var joltageRequirements []int
-	for v := range strings.SplitSeq(part[1:len(part)-1], ",") {
-		joltageRequirements = append(joltageRequirements, util.Atoi(v))
+		buttonCombinations = append(buttonCombinations, buttonCombination{
+			changes: changes,
+			presses: presses,
+		})
 	}
-	return joltageRequirements
+
+	return machine{
+		sought:             sought,
+		buttonCombinations: buttonCombinations,
+	}
 }
